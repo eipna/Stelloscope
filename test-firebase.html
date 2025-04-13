@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Firebase - Stelloscope</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #1877f2;
+        }
+        .console {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .console p {
+            margin: 5px 0;
+        }
+        .console .error {
+            color: #f14c4c;
+        }
+        .console .success {
+            color: #4caf50;
+        }
+        .console .info {
+            color: #2196f3;
+        }
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #166fe5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Firebase Test Page</h1>
+        <p>This page tests the Firebase connection and displays the results in the console below.</p>
+        
+        <div class="buttons">
+            <button onclick="clearConsole()">Clear Console</button>
+            <button onclick="testFirebase()">Test Firebase</button>
+            <button onclick="window.location.href='index.html'">Back to Login</button>
+        </div>
+        
+        <div class="console" id="console"></div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Initialize Firebase -->
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/test-firebase.js"></script>
+    
+    <script>
+        // Override console.log to display in the console div
+        const consoleDiv = document.getElementById('console');
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        
+        console.log = function() {
+            const args = Array.from(arguments);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+            ).join(' ');
+            
+            const p = document.createElement('p');
+            p.textContent = message;
+            consoleDiv.appendChild(p);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            
+            originalConsoleLog.apply(console, arguments);
+        };
+        
+        console.error = function() {
+            const args = Array.from(arguments);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+            ).join(' ');
+            
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.className = 'error';
+            consoleDiv.appendChild(p);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            
+            originalConsoleError.apply(console, arguments);
+        };
+        
+        // Clear console
+        function clearConsole() {
+            consoleDiv.innerHTML = '';
+        }
+        
+        // Test Firebase
+        function testFirebase() {
+            clearConsole();
+            console.log('Testing Firebase connection...');
+            
+            // Check if Firebase is initialized
+            console.log('Firebase initialized:', !!firebase.apps.length);
+            
+            // Test authentication
+            const auth = firebase.auth();
+            auth.onAuthStateChanged(user => {
+                console.log('Auth state changed:', user ? 'User logged in' : 'No user');
+                
+                if (user) {
+                    console.log('User ID:', user.uid);
+                    console.log('User email:', user.email);
+                    
+                    // Test Firestore
+                    testFirestore(user.uid);
+                } else {
+                    console.log('No user logged in');
+                }
+            });
+        }
+        
+        // Test Firestore
+        async function testFirestore(userId) {
+            try {
+                console.log('Testing Firestore...');
+                
+                // Get user document
+                const db = firebase.firestore();
+                const userDoc = await db.collection('users').doc(userId).get();
+                console.log('User document exists:', userDoc.exists);
+                
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    console.log('User data:', userData);
+                    
+                    // Test query
+                    const usersSnapshot = await db.collection('users').get();
+                    console.log('Total users:', usersSnapshot.size);
+                    
+                    // Count users by role
+                    const doctors = usersSnapshot.docs.filter(doc => doc.data().role === 'doctor');
+                    const patients = usersSnapshot.docs.filter(doc => doc.data().role === 'patient');
+                    
+                    console.log('Doctors:', doctors.length);
+                    console.log('Patients:', patients.length);
+                }
+                
+                console.log('Firestore test completed successfully');
+            } catch (error) {
+                console.error('Error testing Firestore:', error);
+            }
+        }
+    </script>
+</body>
+</html> 
