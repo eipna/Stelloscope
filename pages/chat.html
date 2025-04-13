@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stelloscope - Chat</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/chat.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="chat-container">
+        <nav class="sidebar">
+            <h2>Stelloscope</h2>
+            <div class="user-info">
+                <p id="currentUser">Loading...</p>
+            </div>
+            <ul>
+                <li><a href="../admin-dashboard.html">Dashboard</a></li>
+                <li class="active"><a href="#chat">Chat</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </nav>
+        
+        <main class="chat-main">
+            <div class="chat-header">
+                <h1>Chat</h1>
+                <div id="chatPartner">Select a conversation</div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages"></div>
+            
+            <div class="chat-input">
+                <textarea id="messageInput" placeholder="Type your message..."></textarea>
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </main>
+    </div>
+    <script src="../assets/js/firebase-config.js"></script>
+    <script src="../assets/js/chat.js"></script>
+</body>
+</html> 
