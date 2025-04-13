@@ -1,7 +1,3 @@
-// Initialize Firebase Auth and Firestore
-const auth = firebase.auth();
-const db = firebase.firestore();
-
 // Global variables
 let currentUser = null;
 let currentUserRole = null;
@@ -25,24 +21,66 @@ const dashboardLink = document.getElementById('dashboardLink');
 const logoutLink = document.getElementById('logoutLink');
 
 // Debug function
-function debug(message) {
-    console.log(`[DEBUG] ${message}`);
+function debug(message, data = null) {
+    const timestamp = new Date().toISOString();
+    const logMessage = `[DEBUG][${timestamp}] ${message}`;
+    console.log(logMessage);
+    if (data) {
+        console.log('Data:', data);
+    }
+}
+
+// Check if all DOM elements are found
+function checkDOMElements() {
+    debug('Checking DOM elements...');
+    const elements = {
+        currentUserElement,
+        userStatusElement,
+        contactsTitleElement,
+        contactsListElement,
+        chatPartnerElement,
+        partnerStatusElement,
+        chatMessagesElement,
+        messageInputElement,
+        searchContactsElement,
+        messagesLink,
+        dashboardLink,
+        logoutLink
+    };
+    
+    let allFound = true;
+    for (const [name, element] of Object.entries(elements)) {
+        if (!element) {
+            debug(`ERROR: ${name} not found in DOM`, null);
+            allFound = false;
+        }
+    }
+    
+    debug(`DOM elements check ${allFound ? 'passed' : 'failed'}`);
+    return allFound;
 }
 
 // Check authentication state
-auth.onAuthStateChanged(async (user) => {
+firebase.auth().onAuthStateChanged(async (user) => {
     debug(`Auth state changed: ${user ? 'User logged in' : 'No user'}`);
     
     if (user) {
         currentUser = user;
         debug(`User ID: ${user.uid}`);
+        debug(`User email: ${user.email}`);
         
         try {
+            // Check DOM elements first
+            if (!checkDOMElements()) {
+                throw new Error('Required DOM elements not found');
+            }
+            
             await loadUserProfile();
             setupNavigation();
-            loadContacts();
+            await loadContacts();
         } catch (error) {
             console.error('Error initializing chat:', error);
+            debug(`Error initializing chat: ${error.message}`);
             alert('Error initializing chat. Please try again.');
         }
     } else {
@@ -56,7 +94,7 @@ async function loadUserProfile() {
     debug('Loading user profile');
     
     try {
-        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        const userDoc = await firebase.firestore().collection('users').doc(currentUser.uid).get();
         
         if (!userDoc.exists) {
             debug('User document does not exist');
@@ -64,7 +102,7 @@ async function loadUserProfile() {
         }
         
         const userData = userDoc.data();
-        debug(`User data loaded: ${JSON.stringify(userData)}`);
+        debug(`User data loaded:`, userData);
         
         currentUserRole = userData.role;
         debug(`User role: ${currentUserRole}`);
@@ -77,7 +115,7 @@ async function loadUserProfile() {
         contactsTitleElement.textContent = currentUserRole === 'doctor' ? 'Patients' : 'Doctors';
         
         // Update user status to online
-        await db.collection('users').doc(currentUser.uid).update({
+        await firebase.firestore().collection('users').doc(currentUser.uid).update({
             status: 'online',
             lastSeen: firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -85,6 +123,7 @@ async function loadUserProfile() {
         debug('User profile loaded successfully');
     } catch (error) {
         console.error('Error loading user profile:', error);
+        debug(`Error loading user profile: ${error.message}`);
         throw error;
     }
 }
@@ -93,7 +132,7 @@ async function loadUserProfile() {
 function setupNavigation() {
     debug('Setting up navigation');
     
-    // Set dashboard link based on role
+    // Set dashboard link based on user role
     if (currentUserRole === 'doctor') {
         dashboardLink.href = '../doctor-dashboard.html';
         debug('Dashboard link set to doctor dashboard');
@@ -101,26 +140,39 @@ function setupNavigation() {
         dashboardLink.href = '../patient-dashboard.html';
         debug('Dashboard link set to patient dashboard');
     } else {
-        debug(`Unknown role: ${currentUserRole}`);
-        dashboardLink.href = '../index.html';
+        debug(`Invalid role for dashboard: ${currentUserRole}`);
+        dashboardLink.href = '#';
     }
     
     // Setup logout
     logoutLink.addEventListener('click', async (e) => {
         e.preventDefault();
-        debug('Logout clicked');
+        debug('Logging out');
         
         try {
-            await auth.signOut();
-            debug('User signed out');
+            // Update user status to offline
+            if (currentUser) {
+                await firebase.firestore().collection('users').doc(currentUser.uid).update({
+                    status: 'offline',
+                    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                debug('User status updated to offline');
+            }
+            
+            // Sign out
+            await firebase.auth().signOut();
+            debug('User signed out successfully');
+            
+            // Redirect to login page
             window.location.href = '../index.html';
         } catch (error) {
-            console.error('Error signing out:', error);
-            alert('Error signing out. Please try again.');
+            console.error('Error during logout:', error);
+            debug(`Error during logout: ${error.message}`);
+            alert('Error during logout. Please try again.');
         }
     });
     
-    debug('Navigation setup complete');
+    debug('Navigation setup completed');
 }
 
 // Load contacts based on user role
@@ -130,17 +182,23 @@ async function loadContacts() {
     try {
         contactsListElement.innerHTML = '<div class="loading-contacts"><i class="fas fa-spinner fa-spin"></i> Loading contacts...</div>';
         
+        if (!currentUserRole) {
+            debug('No user role available');
+            contactsListElement.innerHTML = '<div class="error">User role not found. Please try logging in again.</div>';
+            return;
+        }
+        
         let contactsSnapshot;
         if (currentUserRole === 'doctor') {
             debug('Loading patients for doctor');
             // Load all patients
-            contactsSnapshot = await db.collection('users')
+            contactsSnapshot = await firebase.firestore().collection('users')
                 .where('role', '==', 'patient')
                 .get();
         } else if (currentUserRole === 'patient') {
             debug('Loading doctors for patient');
             // Load all doctors
-            contactsSnapshot = await db.collection('users')
+            contactsSnapshot = await firebase.firestore().collection('users')
                 .where('role', '==', 'doctor')
                 .get();
         } else {
@@ -160,6 +218,7 @@ async function loadContacts() {
         
     } catch (error) {
         console.error('Error loading contacts:', error);
+        debug(`Error loading contacts: ${error.message}`);
         contactsListElement.innerHTML = '<div class="error">Error loading contacts. Please try again.</div>';
     }
 }
@@ -177,7 +236,7 @@ function displayContacts(contacts) {
     contactsListElement.innerHTML = '';
     contacts.forEach(doc => {
         const contact = doc.data();
-        debug(`Contact: ${contact.username || contact.email}`);
+        debug(`Contact:`, contact);
         
         const contactElement = document.createElement('div');
         contactElement.className = 'contact-item';
@@ -201,7 +260,7 @@ function displayContacts(contacts) {
 
 // Select a chat partner
 async function selectChatPartner(userId, userData) {
-    debug(`Selected chat partner: ${userId}`);
+    debug(`Selected chat partner:`, { userId, userData });
     
     selectedChatPartner = userId;
     
@@ -237,7 +296,7 @@ function loadChatMessages(partnerId) {
     debug(`Chat ID: ${chatId}`);
     
     // Listen to messages in real-time
-    chatListener = db.collection('chats')
+    chatListener = firebase.firestore().collection('chats')
         .doc(chatId)
         .collection('messages')
         .orderBy('timestamp', 'asc')
@@ -255,13 +314,14 @@ function loadChatMessages(partnerId) {
             chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
         }, error => {
             console.error('Error loading messages:', error);
+            debug(`Error loading messages: ${error.message}`);
             chatMessagesElement.innerHTML = '<div class="error">Error loading messages. Please try again.</div>';
         });
 }
 
 // Display a message in the chat
 function displayMessage(message) {
-    debug(`Displaying message: ${message.text.substring(0, 20)}...`);
+    debug(`Displaying message:`, message);
     
     const messageElement = document.createElement('div');
     messageElement.className = `message ${message.senderId === currentUser.uid ? 'sent' : 'received'}`;
@@ -286,12 +346,12 @@ async function sendMessage() {
     const messageText = messageInputElement.value.trim();
     messageInputElement.value = '';
     
-    debug(`Sending message to ${selectedChatPartner}: ${messageText.substring(0, 20)}...`);
+    debug(`Sending message to ${selectedChatPartner}: ${messageText}`);
     
     try {
         const chatId = [currentUser.uid, selectedChatPartner].sort().join('_');
         
-        await db.collection('chats')
+        await firebase.firestore().collection('chats')
             .doc(chatId)
             .collection('messages')
             .add({
@@ -303,6 +363,7 @@ async function sendMessage() {
         debug('Message sent successfully');
     } catch (error) {
         console.error('Error sending message:', error);
+        debug(`Error sending message: ${error.message}`);
         alert('Failed to send message. Please try again.');
     }
 }
@@ -337,12 +398,14 @@ window.addEventListener('beforeunload', async () => {
     if (currentUser) {
         debug('Updating user status to offline');
         try {
-            await db.collection('users').doc(currentUser.uid).update({
+            await firebase.firestore().collection('users').doc(currentUser.uid).update({
                 status: 'offline',
                 lastSeen: firebase.firestore.FieldValue.serverTimestamp()
             });
+            debug('User status updated to offline');
         } catch (error) {
             console.error('Error updating user status:', error);
+            debug(`Error updating user status: ${error.message}`);
         }
     }
 }); 

@@ -55,7 +55,7 @@ async function loadDashboardData(userId) {
 async function loadRecentActivity(userId) {
     try {
         const activityList = document.getElementById('recentActivityList');
-        activityList.innerHTML = '';
+        activityList.innerHTML = '<div class="loading">Loading recent activity...</div>';
         
         // Get recent conversations
         const conversationsSnapshot = await db.collection('conversations')
@@ -63,6 +63,13 @@ async function loadRecentActivity(userId) {
             .orderBy('timestamp', 'desc')
             .limit(5)
             .get();
+        
+        if (conversationsSnapshot.empty) {
+            activityList.innerHTML = '<div class="no-activity">No recent activity</div>';
+            return;
+        }
+        
+        activityList.innerHTML = '';
         
         for (const doc of conversationsSnapshot.docs) {
             const conversation = doc.data();
@@ -90,13 +97,30 @@ async function loadRecentActivity(userId) {
             activityItem.innerHTML = `
                 <h4>${doctorData.username}</h4>
                 <p>${lastMessage}</p>
-                <a href="chat.html?conversation=${doc.id}">View Conversation</a>
+                <a href="pages/chat.html?conversation=${doc.id}">View Conversation</a>
             `;
             
             activityList.appendChild(activityItem);
         }
     } catch (error) {
         console.error('Error loading recent activity:', error);
+        const activityList = document.getElementById('recentActivityList');
+        
+        if (error.code === 'failed-precondition') {
+            activityList.innerHTML = `
+                <div class="error">
+                    <p>Unable to load recent activity. The database index is being created.</p>
+                    <p>Please try again in a few minutes.</p>
+                </div>
+            `;
+        } else {
+            activityList.innerHTML = `
+                <div class="error">
+                    <p>Error loading recent activity. Please try again later.</p>
+                    <p>Error details: ${error.message}</p>
+                </div>
+            `;
+        }
     }
 }
 
