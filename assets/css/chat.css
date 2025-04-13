@@ -157,6 +157,20 @@
     margin-right: 8px;
 }
 
+.no-contacts, .error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #65676b;
+    text-align: center;
+}
+
+.error {
+    color: #e41e3f;
+    font-weight: 500;
+}
+
 .contact-item {
     display: flex;
     align-items: center;

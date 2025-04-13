@@ -91,9 +91,17 @@ async function loadContacts() {
             contactsSnapshot = await db.collection('users')
                 .where('role', '==', 'doctor')
                 .get();
+        } else {
+            // If role is not set or invalid
+            contactsListElement.innerHTML = '<div class="error">Invalid user role. Please contact support.</div>';
+            return;
         }
         
-        displayContacts(contactsSnapshot.docs);
+        if (contactsSnapshot && contactsSnapshot.docs && contactsSnapshot.docs.length > 0) {
+            displayContacts(contactsSnapshot.docs);
+        } else {
+            contactsListElement.innerHTML = '<div class="no-contacts">No contacts available</div>';
+        }
         
     } catch (error) {
         console.error('Error loading contacts:', error);
@@ -103,7 +111,7 @@ async function loadContacts() {
 
 // Display contacts in the list
 function displayContacts(contacts) {
-    if (contacts.length === 0) {
+    if (!contacts || contacts.length === 0) {
         contactsListElement.innerHTML = '<div class="no-contacts">No contacts available</div>';
         return;
     }
@@ -175,6 +183,9 @@ function loadChatMessages(partnerId) {
             
             // Scroll to bottom
             chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
+        }, error => {
+            console.error('Error loading messages:', error);
+            chatMessagesElement.innerHTML = '<div class="error">Error loading messages. Please try again.</div>';
         });
 }
 
