@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="messenger-container">
-        <!-- Left sidebar with user profile and navigation -->
+        <!-- Left sidebar with navigation -->
         <div class="messenger-sidebar">
             <div class="user-profile">
                 <div class="profile-image">
@@ -21,23 +21,15 @@
                 </div>
             </div>
             <div class="navigation">
-                <a href="../admin-dashboard.html" class="nav-item" id="adminLink" style="display: none;">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Admin Dashboard</span>
-                </a>
-                <a href="../doctor-dashboard.html" class="nav-item" id="doctorLink" style="display: none;">
-                    <i class="fas fa-user-md"></i>
-                    <span>Doctor Dashboard</span>
-                </a>
-                <a href="../patient-dashboard.html" class="nav-item" id="patientLink" style="display: none;">
-                    <i class="fas fa-user"></i>
-                    <span>Patient Dashboard</span>
-                </a>
-                <a href="#" class="nav-item active">
+                <a href="#" class="nav-item active" id="messagesLink">
                     <i class="fas fa-comments"></i>
                     <span>Messages</span>
                 </a>
-                <a href="#" class="nav-item" onclick="logout()">
+                <a href="#" class="nav-item" id="dashboardLink">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" id="logoutLink">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </a>
@@ -47,7 +39,7 @@
         <!-- Contacts panel -->
         <div class="contacts-panel">
             <div class="contacts-header">
-                <h2>Messages</h2>
+                <h2 id="contactsTitle">Loading...</h2>
                 <div class="search-container">
                     <i class="fas fa-search"></i>
                     <input type="text" id="searchContacts" placeholder="Search contacts...">

@@ -7,7 +7,7 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Left sidebar with user profile and navigation */
+/* Left sidebar with navigation */
 .messenger-sidebar {
     width: 280px;
     background-color: white;
@@ -206,10 +206,6 @@
     margin: 2px 0 0;
     font-size: 13px;
     color: #65676b;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px;
 }
 
 /* Chat panel */
