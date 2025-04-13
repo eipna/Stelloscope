@@ -1,271 +1,275 @@
+// Initialize Firebase Auth and Firestore
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 // Global variables
 let currentUser = null;
 let currentUserRole = null;
-let currentChatPartner = null;
-let currentConversationId = null;
+let selectedChatPartner = null;
+let chatListener = null;
+
+// DOM Elements
+const currentUserElement = document.getElementById('currentUser');
+const userStatusElement = document.getElementById('userStatus');
+const contactsListElement = document.getElementById('contactsList');
+const chatPartnerElement = document.getElementById('chatPartner');
+const partnerStatusElement = document.getElementById('partnerStatus');
+const chatMessagesElement = document.getElementById('chatMessages');
+const messageInputElement = document.getElementById('messageInput');
+const searchContactsElement = document.getElementById('searchContacts');
+
+// Navigation links
+const adminLink = document.getElementById('adminLink');
+const doctorLink = document.getElementById('doctorLink');
+const patientLink = document.getElementById('patientLink');
 
 // Check authentication state
 auth.onAuthStateChanged(async (user) => {
-    if (!user) {
-        window.location.href = '../index.html';
-        return;
+    if (user) {
+        currentUser = user;
+        await loadUserProfile();
+        loadContacts();
+    } else {
+        window.location.href = 'login.html';
     }
-
-    // Get user data
-    const userDoc = await db.collection('users').doc(user.uid).get();
-    const userData = userDoc.data();
-    
-    currentUser = user;
-    currentUserRole = userData.role;
-    
-    // Display user info
-    document.getElementById('currentUser').textContent = userData.username;
-    
-    // Show appropriate dashboard link
-    if (currentUserRole === 'admin') {
-        document.getElementById('adminLink').style.display = 'block';
-    } else if (currentUserRole === 'doctor') {
-        document.getElementById('doctorLink').style.display = 'block';
-    } else if (currentUserRole === 'patient') {
-        document.getElementById('patientLink').style.display = 'block';
-    }
-    
-    // Load contacts based on user role
-    loadContacts();
 });
 
-// Load contacts (doctors or patients) based on user role
-async function loadContacts() {
-    const contactsList = document.getElementById('contactsList');
-    const contactsTitle = document.getElementById('contactsTitle');
-    contactsList.innerHTML = '';
-    
+// Load user profile and role
+async function loadUserProfile() {
     try {
-        if (currentUserRole === 'doctor') {
-            // For doctors, load their patients
-            contactsTitle.textContent = 'My Patients';
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+            currentUserRole = userData.role;
+            currentUserElement.textContent = userData.name || userData.email;
             
-            // Get conversations where the current user is the doctor
-            const conversationsSnapshot = await db.collection('conversations')
+            // Show/hide navigation links based on role
+            if (currentUserRole === 'admin') {
+                adminLink.style.display = 'flex';
+            } else if (currentUserRole === 'doctor') {
+                doctorLink.style.display = 'flex';
+            } else if (currentUserRole === 'patient') {
+                patientLink.style.display = 'flex';
+            }
+            
+            // Update user status
+            await db.collection('users').doc(currentUser.uid).update({
+                status: 'online',
+                lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+    } catch (error) {
+        console.error('Error loading user profile:', error);
+    }
+}
+
+// Load contacts based on user role
+async function loadContacts() {
+    try {
+        contactsListElement.innerHTML = '<div class="loading-contacts"><i class="fas fa-spinner fa-spin"></i> Loading contacts...</div>';
+        
+        let contactsQuery;
+        if (currentUserRole === 'doctor') {
+            // Doctors can see their patients
+            contactsQuery = await db.collection('appointments')
                 .where('doctorId', '==', currentUser.uid)
                 .get();
             
-            if (conversationsSnapshot.empty) {
-                contactsList.innerHTML = '<p>No patients yet</p>';
-                return;
-            }
+            const patientIds = new Set();
+            contactsQuery.forEach(doc => {
+                patientIds.add(doc.data().patientId);
+            });
             
-            // Get patient details for each conversation
-            for (const doc of conversationsSnapshot.docs) {
-                const conversation = doc.data();
-                const patientDoc = await db.collection('users').doc(conversation.patientId).get();
-                const patientData = patientDoc.data();
+            const patients = await db.collection('users')
+                .where('role', '==', 'patient')
+                .where(firebase.firestore.FieldPath.documentId(), 'in', Array.from(patientIds))
+                .get();
                 
-                // Create contact item
-                const contactItem = document.createElement('div');
-                contactItem.className = 'contact-item';
-                contactItem.dataset.userId = patientData.uid;
-                contactItem.dataset.conversationId = doc.id;
-                contactItem.innerHTML = `
-                    <h4>${patientData.username}</h4>
-                    <p>${patientData.email}</p>
-                `;
-                
-                // Add click event to start conversation
-                contactItem.addEventListener('click', () => {
-                    startConversation(doc.id, patientData);
-                });
-                
-                contactsList.appendChild(contactItem);
-            }
+            displayContacts(patients.docs);
+            
         } else if (currentUserRole === 'patient') {
-            // For patients, load their doctors
-            contactsTitle.textContent = 'My Doctors';
-            
-            // Get conversations where the current user is the patient
-            const conversationsSnapshot = await db.collection('conversations')
+            // Patients can see their doctors
+            contactsQuery = await db.collection('appointments')
                 .where('patientId', '==', currentUser.uid)
                 .get();
             
-            if (conversationsSnapshot.empty) {
-                contactsList.innerHTML = '<p>No doctors yet</p>';
-                return;
-            }
+            const doctorIds = new Set();
+            contactsQuery.forEach(doc => {
+                doctorIds.add(doc.data().doctorId);
+            });
             
-            // Get doctor details for each conversation
-            for (const doc of conversationsSnapshot.docs) {
-                const conversation = doc.data();
-                const doctorDoc = await db.collection('users').doc(conversation.doctorId).get();
-                const doctorData = doctorDoc.data();
+            const doctors = await db.collection('users')
+                .where('role', '==', 'doctor')
+                .where(firebase.firestore.FieldPath.documentId(), 'in', Array.from(doctorIds))
+                .get();
                 
-                // Create contact item
-                const contactItem = document.createElement('div');
-                contactItem.className = 'contact-item';
-                contactItem.dataset.userId = doctorData.uid;
-                contactItem.dataset.conversationId = doc.id;
-                contactItem.innerHTML = `
-                    <h4>${doctorData.username}</h4>
-                    <p>${doctorData.email}</p>
-                `;
-                
-                // Add click event to start conversation
-                contactItem.addEventListener('click', () => {
-                    startConversation(doc.id, doctorData);
-                });
-                
-                contactsList.appendChild(contactItem);
-            }
+            displayContacts(doctors.docs);
         }
     } catch (error) {
         console.error('Error loading contacts:', error);
-        contactsList.innerHTML = '<p>Error loading contacts</p>';
+        contactsListElement.innerHTML = '<div class="error">Error loading contacts. Please try again.</div>';
     }
 }
 
-// Start a conversation with a user
-function startConversation(conversationId, partnerData) {
-    // Update UI to show active conversation
-    currentChatPartner = partnerData;
-    currentConversationId = conversationId;
+// Display contacts in the list
+function displayContacts(contacts) {
+    if (contacts.length === 0) {
+        contactsListElement.innerHTML = '<div class="no-contacts">No contacts available</div>';
+        return;
+    }
     
-    // Update chat partner name
-    document.getElementById('chatPartner').textContent = partnerData.username;
+    contactsListElement.innerHTML = '';
+    contacts.forEach(doc => {
+        const contact = doc.data();
+        const contactElement = document.createElement('div');
+        contactElement.className = 'contact-item';
+        contactElement.dataset.userId = doc.id;
+        contactElement.innerHTML = `
+            <div class="contact-avatar">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="contact-info">
+                <h4>${contact.name || contact.email}</h4>
+                <p>${contact.role === 'doctor' ? 'Doctor' : 'Patient'}</p>
+            </div>
+        `;
+        
+        contactElement.addEventListener('click', () => selectChatPartner(doc.id, contact));
+        contactsListElement.appendChild(contactElement);
+    });
+}
+
+// Select a chat partner
+async function selectChatPartner(userId, userData) {
+    selectedChatPartner = userId;
     
-    // Highlight active contact
-    const contactItems = document.querySelectorAll('.contact-item');
-    contactItems.forEach(item => {
-        if (item.dataset.conversationId === conversationId) {
+    // Update UI
+    document.querySelectorAll('.contact-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.userId === userId) {
             item.classList.add('active');
-        } else {
-            item.classList.remove('active');
         }
     });
     
-    // Load messages
-    loadMessages(conversationId);
+    chatPartnerElement.textContent = userData.name || userData.email;
+    partnerStatusElement.textContent = userData.status || 'Offline';
+    
+    // Clear previous chat listener
+    if (chatListener) {
+        chatListener();
+    }
+    
+    // Load chat messages
+    loadChatMessages(userId);
 }
 
-// Load messages for a conversation
-async function loadMessages(conversationId) {
-    const chatMessages = document.getElementById('chatMessages');
-    chatMessages.innerHTML = '';
+// Load chat messages
+function loadChatMessages(partnerId) {
+    chatMessagesElement.innerHTML = '';
     
-    try {
-        // Get messages for the conversation
-        const messagesSnapshot = await db.collection('conversations')
-            .doc(conversationId)
-            .collection('messages')
-            .orderBy('timestamp', 'asc')
-            .get();
-        
-        if (messagesSnapshot.empty) {
-            chatMessages.innerHTML = '<p class="no-messages">No messages yet. Start the conversation!</p>';
-            return;
-        }
-        
-        // Display each message
-        messagesSnapshot.forEach(doc => {
-            const message = doc.data();
-            const isSent = message.senderId === currentUser.uid;
+    // Create a unique chat ID for the conversation
+    const chatId = [currentUser.uid, partnerId].sort().join('_');
+    
+    // Listen to messages in real-time
+    chatListener = db.collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .orderBy('timestamp', 'asc')
+        .onSnapshot(snapshot => {
+            snapshot.docChanges().forEach(change => {
+                if (change.type === 'added') {
+                    const message = change.doc.data();
+                    displayMessage(message);
+                }
+            });
             
-            const messageElement = document.createElement('div');
-            messageElement.className = `message ${isSent ? 'sent' : 'received'}`;
-            
-            // Format timestamp
-            const timestamp = message.timestamp.toDate();
-            const timeString = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            messageElement.innerHTML = `
-                <div class="message-content">${message.text}</div>
-                <div class="message-time">${timeString}</div>
-            `;
-            
-            chatMessages.appendChild(messageElement);
+            // Scroll to bottom
+            chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight;
         });
-        
-        // Scroll to bottom
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        
-        // Mark messages as read
-        markMessagesAsRead(conversationId);
-    } catch (error) {
-        console.error('Error loading messages:', error);
-        chatMessages.innerHTML = '<p>Error loading messages</p>';
-    }
+}
+
+// Display a message in the chat
+function displayMessage(message) {
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${message.senderId === currentUser.uid ? 'sent' : 'received'}`;
+    
+    const time = message.timestamp ? new Date(message.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    
+    messageElement.innerHTML = `
+        <div class="message-content">${message.text}</div>
+        <div class="message-time">${time}</div>
+    `;
+    
+    chatMessagesElement.appendChild(messageElement);
 }
 
 // Send a message
 async function sendMessage() {
-    const messageInput = document.getElementById('messageInput');
-    const messageText = messageInput.value.trim();
+    if (!selectedChatPartner || !messageInputElement.value.trim()) return;
     
-    if (!messageText || !currentConversationId) return;
+    const messageText = messageInputElement.value.trim();
+    messageInputElement.value = '';
     
     try {
-        // Add message to Firestore
-        await db.collection('conversations')
-            .doc(currentConversationId)
+        const chatId = [currentUser.uid, selectedChatPartner].sort().join('_');
+        
+        await db.collection('chats')
+            .doc(chatId)
             .collection('messages')
             .add({
                 text: messageText,
                 senderId: currentUser.uid,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                read: false
-            });
-        
-        // Update conversation timestamp
-        await db.collection('conversations')
-            .doc(currentConversationId)
-            .update({
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-        
-        // Clear input
-        messageInput.value = '';
-        
-        // Reload messages
-        loadMessages(currentConversationId);
+            
     } catch (error) {
         console.error('Error sending message:', error);
+        alert('Failed to send message. Please try again.');
     }
 }
 
-// Mark messages as read
-async function markMessagesAsRead(conversationId) {
-    try {
-        // Get unread messages
-        const messagesSnapshot = await db.collection('conversations')
-            .doc(conversationId)
-            .collection('messages')
-            .where('senderId', '!=', currentUser.uid)
-            .where('read', '==', false)
-            .get();
-        
-        // Mark each message as read
-        const batch = db.batch();
-        messagesSnapshot.forEach(doc => {
-            batch.update(doc.ref, { read: true });
-        });
-        
-        await batch.commit();
-    } catch (error) {
-        console.error('Error marking messages as read:', error);
-    }
-}
-
-// Logout function
-function logout() {
-    auth.signOut().then(() => {
-        window.location.href = '../index.html';
-    }).catch((error) => {
-        console.error('Error signing out:', error);
+// Search contacts
+searchContactsElement.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const contactItems = document.querySelectorAll('.contact-item');
+    
+    contactItems.forEach(item => {
+        const contactName = item.querySelector('h4').textContent.toLowerCase();
+        if (contactName.includes(searchTerm)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
     });
-}
+});
 
-// Add event listener for Enter key in message input
-document.getElementById('messageInput').addEventListener('keypress', (e) => {
+// Handle message input
+messageInputElement.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendMessage();
     }
-}); 
+});
+
+// Update user status when leaving
+window.addEventListener('beforeunload', async () => {
+    if (currentUser) {
+        try {
+            await db.collection('users').doc(currentUser.uid).update({
+                status: 'offline',
+                lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        } catch (error) {
+            console.error('Error updating user status:', error);
+        }
+    }
+});
+
+// Logout function
+function logout() {
+    auth.signOut().then(() => {
+        window.location.href = 'login.html';
+    }).catch((error) => {
+        console.error('Error signing out:', error);
+    });
+} 
