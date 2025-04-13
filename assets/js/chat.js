@@ -69,13 +69,19 @@ async function loadContacts() {
         contactsListElement.innerHTML = '<div class="loading-contacts"><i class="fas fa-spinner fa-spin"></i> Loading contacts...</div>';
         
         if (currentUserRole === 'doctor') {
-            // Doctors can see their patients
+            // For testing: Load all patients if no appointments exist
             const appointmentsSnapshot = await db.collection('appointments')
                 .where('doctorId', '==', currentUser.uid)
                 .get();
             
             if (appointmentsSnapshot.empty) {
-                contactsListElement.innerHTML = '<div class="no-contacts">No patients available</div>';
+                // If no appointments, load all patients for testing
+                console.log("No appointments found, loading all patients for testing");
+                const patientsSnapshot = await db.collection('users')
+                    .where('role', '==', 'patient')
+                    .get();
+                
+                displayContacts(patientsSnapshot.docs);
                 return;
             }
             
@@ -88,7 +94,13 @@ async function loadContacts() {
             });
             
             if (patientIds.length === 0) {
-                contactsListElement.innerHTML = '<div class="no-contacts">No patients available</div>';
+                // If no patient IDs found, load all patients for testing
+                console.log("No patient IDs found, loading all patients for testing");
+                const patientsSnapshot = await db.collection('users')
+                    .where('role', '==', 'patient')
+                    .get();
+                
+                displayContacts(patientsSnapshot.docs);
                 return;
             }
             
@@ -100,13 +112,19 @@ async function loadContacts() {
             displayContacts(patientsSnapshot.docs);
             
         } else if (currentUserRole === 'patient') {
-            // Patients can see their doctors
+            // For testing: Load all doctors if no appointments exist
             const appointmentsSnapshot = await db.collection('appointments')
                 .where('patientId', '==', currentUser.uid)
                 .get();
             
             if (appointmentsSnapshot.empty) {
-                contactsListElement.innerHTML = '<div class="no-contacts">No doctors available</div>';
+                // If no appointments, load all doctors for testing
+                console.log("No appointments found, loading all doctors for testing");
+                const doctorsSnapshot = await db.collection('users')
+                    .where('role', '==', 'doctor')
+                    .get();
+                
+                displayContacts(doctorsSnapshot.docs);
                 return;
             }
             
@@ -119,7 +137,13 @@ async function loadContacts() {
             });
             
             if (doctorIds.length === 0) {
-                contactsListElement.innerHTML = '<div class="no-contacts">No doctors available</div>';
+                // If no doctor IDs found, load all doctors for testing
+                console.log("No doctor IDs found, loading all doctors for testing");
+                const doctorsSnapshot = await db.collection('users')
+                    .where('role', '==', 'doctor')
+                    .get();
+                
+                displayContacts(doctorsSnapshot.docs);
                 return;
             }
             
