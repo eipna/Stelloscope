@@ -1,12 +1,12 @@
 // Your web app's Firebase configuration
 const firebaseConfig = {
     // Replace with your Firebase config
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyD8CoCpX7xu5rrhdqbbxD5jwZ4K1BGlz48",
+    authDomain: "stelloscope.firebaseapp.com",
+    projectId: "stelloscope",
+    storageBucket: "stelloscope.firebasestorage.app",
+    messagingSenderId: "279952580391",
+    appId: "1:279952580391:web:870c13b9ab3f90bd86d302"
 };
 
 // Initialize Firebase
