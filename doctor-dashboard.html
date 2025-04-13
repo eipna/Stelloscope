@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stelloscope - Admin Dashboard</title>
+    <title>Stelloscope - Doctor Dashboard</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="dashboard.css">
     <!-- Firebase SDK -->
@@ -16,32 +16,33 @@
         <nav class="sidebar">
             <h2>Stelloscope</h2>
             <ul>
-                <li class="active"><a href="#users">Users</a></li>
+                <li class="active"><a href="#dashboard">Dashboard</a></li>
                 <li><a href="chat.html">Chat</a></li>
                 <li><a href="#" onclick="logout()">Logout</a></li>
             </ul>
         </nav>
         
         <main class="main-content">
-            <h1>User Management</h1>
+            <h1>Doctor Dashboard</h1>
             
-            <div class="tabs">
-                <button class="tab-btn active" onclick="showUserTab('doctors')">Doctors</button>
-                <button class="tab-btn" onclick="showUserTab('patients')">Patients</button>
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3>Active Patients</h3>
+                    <p id="activePatientsCount">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending Messages</h3>
+                    <p id="pendingMessagesCount">0</p>
+                </div>
             </div>
-
-            <div id="doctorsList" class="user-list active">
-                <h2>Doctors</h2>
-                <div class="users-container"></div>
-            </div>
-
-            <div id="patientsList" class="user-list">
-                <h2>Patients</h2>
-                <div class="users-container"></div>
+            
+            <div class="recent-activity">
+                <h2>Recent Activity</h2>
+                <div id="recentActivityList" class="activity-list"></div>
             </div>
         </main>
     </div>
     <script src="firebase-config.js"></script>
-    <script src="admin-dashboard.js"></script>
+    <script src="doctor-dashboard.js"></script>
 </body>
 </html> 
