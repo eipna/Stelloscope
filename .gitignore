@@ -2,9 +2,10 @@
 .firebase/
 firebase-debug.log
 firebase-debug.*.log
-firebase-config.js
+# firebase-config.js - Commented out to allow this file to be committed
 firebase-config.local.js
 firebase-config.*.js
+!firebase-config.js
 
 # Environment variables
 .env
