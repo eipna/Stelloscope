@@ -30,7 +30,7 @@ auth.onAuthStateChanged(async (user) => {
         await loadUserProfile();
         loadContacts();
     } else {
-        window.location.href = 'login.html';
+        window.location.href = '../login.html';
     }
 });
 
@@ -68,42 +68,69 @@ async function loadContacts() {
     try {
         contactsListElement.innerHTML = '<div class="loading-contacts"><i class="fas fa-spinner fa-spin"></i> Loading contacts...</div>';
         
-        let contactsQuery;
         if (currentUserRole === 'doctor') {
             // Doctors can see their patients
-            contactsQuery = await db.collection('appointments')
+            const appointmentsSnapshot = await db.collection('appointments')
                 .where('doctorId', '==', currentUser.uid)
                 .get();
             
-            const patientIds = new Set();
-            contactsQuery.forEach(doc => {
-                patientIds.add(doc.data().patientId);
+            if (appointmentsSnapshot.empty) {
+                contactsListElement.innerHTML = '<div class="no-contacts">No patients available</div>';
+                return;
+            }
+            
+            const patientIds = [];
+            appointmentsSnapshot.forEach(doc => {
+                const patientId = doc.data().patientId;
+                if (patientId && !patientIds.includes(patientId)) {
+                    patientIds.push(patientId);
+                }
             });
             
-            const patients = await db.collection('users')
-                .where('role', '==', 'patient')
-                .where(firebase.firestore.FieldPath.documentId(), 'in', Array.from(patientIds))
+            if (patientIds.length === 0) {
+                contactsListElement.innerHTML = '<div class="no-contacts">No patients available</div>';
+                return;
+            }
+            
+            // Get patient details
+            const patientsSnapshot = await db.collection('users')
+                .where(firebase.firestore.FieldPath.documentId(), 'in', patientIds)
                 .get();
                 
-            displayContacts(patients.docs);
+            displayContacts(patientsSnapshot.docs);
             
         } else if (currentUserRole === 'patient') {
             // Patients can see their doctors
-            contactsQuery = await db.collection('appointments')
+            const appointmentsSnapshot = await db.collection('appointments')
                 .where('patientId', '==', currentUser.uid)
                 .get();
             
-            const doctorIds = new Set();
-            contactsQuery.forEach(doc => {
-                doctorIds.add(doc.data().doctorId);
+            if (appointmentsSnapshot.empty) {
+                contactsListElement.innerHTML = '<div class="no-contacts">No doctors available</div>';
+                return;
+            }
+            
+            const doctorIds = [];
+            appointmentsSnapshot.forEach(doc => {
+                const doctorId = doc.data().doctorId;
+                if (doctorId && !doctorIds.includes(doctorId)) {
+                    doctorIds.push(doctorId);
+                }
             });
             
-            const doctors = await db.collection('users')
-                .where('role', '==', 'doctor')
-                .where(firebase.firestore.FieldPath.documentId(), 'in', Array.from(doctorIds))
+            if (doctorIds.length === 0) {
+                contactsListElement.innerHTML = '<div class="no-contacts">No doctors available</div>';
+                return;
+            }
+            
+            // Get doctor details
+            const doctorsSnapshot = await db.collection('users')
+                .where(firebase.firestore.FieldPath.documentId(), 'in', doctorIds)
                 .get();
                 
-            displayContacts(doctors.docs);
+            displayContacts(doctorsSnapshot.docs);
+        } else {
+            contactsListElement.innerHTML = '<div class="no-contacts">No contacts available for your role</div>';
         }
     } catch (error) {
         console.error('Error loading contacts:', error);
@@ -268,7 +295,7 @@ window.addEventListener('beforeunload', async () => {
 // Logout function
 function logout() {
     auth.signOut().then(() => {
-        window.location.href = 'login.html';
+        window.location.href = '../login.html';
     }).catch((error) => {
         console.error('Error signing out:', error);
     });
