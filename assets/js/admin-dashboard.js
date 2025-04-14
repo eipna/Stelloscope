@@ -58,7 +58,6 @@ function createUserCard(user) {
     card.innerHTML = `
         <h3>${user.username}</h3>
         <p class="email">${user.email}</p>
-        <p>Role: ${user.role}</p>
     `;
     return card;
 }
