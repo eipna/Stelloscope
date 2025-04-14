@@ -35,13 +35,25 @@ A web application for managing patient-doctor communication and health monitorin
 StatusCope/
 ├── assets/
 │   ├── css/
+│   │   ├── styles.css
+│   │   └── dashboard.css
 │   ├── js/
+│   │   ├── app.js
+│   │   ├── admin-dashboard.js
+│   │   ├── doctor-dashboard.js
+│   │   ├── patient-dashboard.js
+│   │   ├── chat.js
+│   │   └── firebase-config.js
 │   └── img/
 ├── pages/
 │   ├── chat.html
 │   └── blood-pressure.html
 ├── index.html
 ├── admin-dashboard.html
+├── doctor-dashboard.html
+├── patient-dashboard.html
+├── firebase-config.example.js
+├── LICENSE
 └── README.md
 ```
 
