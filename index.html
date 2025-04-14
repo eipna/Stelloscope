@@ -42,5 +42,19 @@
     </div>
     <script src="assets/js/firebase-config.js"></script>
     <script src="assets/js/app.js"></script>
+    <script>
+    // Handle login success
+    function loginSuccess(user, role) {
+        // Store user info in localStorage
+        localStorage.setItem('currentUser', JSON.stringify({
+            uid: user.uid,
+            email: user.email,
+            role: role
+        }));
+        
+        // Redirect to chat page
+        window.location.href = 'pages/chat.html';
+    }
+    </script>
 </body>
 </html> 

@@ -17,7 +17,7 @@ const searchContactsElement = document.getElementById('searchContacts');
 
 // Navigation elements
 const messagesLink = document.getElementById('messagesLink');
-const dashboardLink = document.getElementById('dashboardLink');
+const bpLink = document.getElementById('bpLink');
 const logoutLink = document.getElementById('logoutLink');
 
 // Debug function
@@ -44,7 +44,7 @@ function checkDOMElements() {
         messageInputElement,
         searchContactsElement,
         messagesLink,
-        dashboardLink,
+        bpLink,
         logoutLink
     };
     
@@ -132,16 +132,9 @@ async function loadUserProfile() {
 function setupNavigation() {
     debug('Setting up navigation');
     
-    // Set dashboard link based on user role
-    if (currentUserRole === 'doctor') {
-        dashboardLink.href = '../doctor-dashboard.html';
-        debug('Dashboard link set to doctor dashboard');
-    } else if (currentUserRole === 'patient') {
-        dashboardLink.href = '../patient-dashboard.html';
-        debug('Dashboard link set to patient dashboard');
-    } else {
-        debug(`Invalid role for dashboard: ${currentUserRole}`);
-        dashboardLink.href = '#';
+    // Show blood pressure link only for patients
+    if (currentUserRole === 'patient') {
+        bpLink.style.display = 'flex';
     }
     
     // Setup logout

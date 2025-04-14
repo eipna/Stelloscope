@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Pressure Reading - Stelloscope</title>
+    <link rel="stylesheet" href="../assets/css/chat.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="messenger-container">
+        <!-- Left sidebar with navigation -->
+        <div class="messenger-sidebar">
+            <div class="user-profile">
+                <div class="profile-image">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="profile-info">
+                    <h3 id="currentUser">Loading...</h3>
+                    <p id="userStatus">Offline</p>
+                </div>
+            </div>
+            <div class="navigation">
+                <a href="chat.html" class="nav-item" id="messagesLink">
+                    <i class="fas fa-comments"></i>
+                    <span>Messages</span>
+                </a>
+                <a href="blood-pressure.html" class="nav-item active" id="bpLink">
+                    <i class="fas fa-heartbeat"></i>
+                    <span>Blood Pressure</span>
+                </a>
+                <a href="#" class="nav-item" id="logoutLink">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main content area -->
+        <div class="main-content">
+            <h1>Blood Pressure Reading</h1>
+            <!-- Content will be added later -->
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Initialize Firebase -->
+    <script src="../assets/js/firebase-config.js"></script>
+    <script src="../assets/js/blood-pressure.js"></script>
+</body>
+</html> 
