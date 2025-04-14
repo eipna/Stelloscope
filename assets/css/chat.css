@@ -3,7 +3,7 @@
     display: flex;
     height: 100vh;
     width: 100%;
-    background-color: #f0f2f5;
+    background-color: var(--background-color);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -11,7 +11,7 @@
 .messenger-sidebar {
     width: 280px;
     background-color: white;
-    border-right: 1px solid #e4e6eb;
+    border-right: 1px solid var(--text-color);
     display: flex;
     flex-direction: column;
     z-index: 10;
@@ -21,14 +21,14 @@
     display: flex;
     align-items: center;
     padding: 16px;
-    border-bottom: 1px solid #e4e6eb;
+    border-bottom: 1px solid var(--text-color);
 }
 
 .profile-image {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: #e4e6eb;
+    background-color: var(--background-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -37,20 +37,21 @@
 
 .profile-image i {
     font-size: 24px;
-    color: #65676b;
+    color: var(--text-color);
 }
 
 .profile-info h3 {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
-    color: #050505;
+    color: var(--text-color);
 }
 
 .profile-info p {
     margin: 2px 0 0;
     font-size: 13px;
-    color: #65676b;
+    color: var(--text-color);
+    opacity: 0.7;
 }
 
 .navigation {
@@ -78,16 +79,16 @@
 }
 
 .nav-item:hover {
-    background-color: #f0f2f5;
+    background-color: var(--light-yellow);
 }
 
 .nav-item.active {
-    background-color: #e7f3ff;
-    color: #1E90FF;
+    background-color: var(--light-blue);
+    color: var(--secondary-color);
 }
 
 .nav-item.active i {
-    color: #1E90FF;
+    color: var(--secondary-color);
 }
 
 /* Contacts panel */
@@ -109,7 +110,7 @@
     margin: 0 0 16px;
     font-size: 24px;
     font-weight: 700;
-    color: #050505;
+    color: var(--text-color);
 }
 
 .search-container {
@@ -121,7 +122,8 @@
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    color: #65676b;
+    color: var(--text-color);
+    opacity: 0.7;
 }
 
 #searchContacts {
@@ -129,14 +131,14 @@
     padding: 8px 12px 8px 36px;
     border: none;
     border-radius: 20px;
-    background-color: #f0f2f5;
+    background-color: var(--background-color);
     font-size: 15px;
-    color: #050505;
+    color: var(--text-color);
 }
 
 #searchContacts:focus {
     outline: none;
-    background-color: #e4e6eb;
+    background-color: var(--light-blue);
 }
 
 .contacts-list {
@@ -182,11 +184,11 @@
 }
 
 .contact-item:hover {
-    background-color: #f0f2f5;
+    background-color: var(--light-yellow);
 }
 
 .contact-item.active {
-    background-color: #e7f3ff;
+    background-color: var(--light-blue);
 }
 
 .contact-avatar {
@@ -294,7 +296,7 @@
 .no-conversation i {
     font-size: 48px;
     margin-bottom: 16px;
-    color: #1E90FF;
+    color: var(--secondary-color);
 }
 
 .no-conversation p {
@@ -313,7 +315,7 @@
 
 .message.sent {
     align-self: flex-end;
-    background-color: #1E90FF;
+    background-color: var(--secondary-color);
     color: white;
     border-bottom-right-radius: 4px;
 }
@@ -321,7 +323,7 @@
 .message.received {
     align-self: flex-start;
     background-color: white;
-    color: #050505;
+    color: var(--text-color);
     border-bottom-left-radius: 4px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -342,7 +344,7 @@
 .message-input-wrapper {
     display: flex;
     align-items: center;
-    background-color: #f0f2f5;
+    background-color: var(--background-color);
     border-radius: 20px;
     padding: 8px 12px;
 }
@@ -368,7 +370,7 @@
 .send-btn {
     background: none;
     border: none;
-    color: #1E90FF;
+    color: var(--secondary-color);
     font-size: 20px;
     cursor: pointer;
     padding: 0 0 0 8px;
@@ -382,7 +384,7 @@
 }
 
 .send-btn:hover {
-    background-color: rgba(30, 144, 255, 0.1);
+    background-color: var(--light-yellow);
 }
 
 /* Responsive design */
@@ -470,6 +472,6 @@
 }
 
 .main-content h1 {
-    color: #1E90FF;
+    color: var(--secondary-color);
     margin-bottom: 20px;
 } 
