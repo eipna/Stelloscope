@@ -20,7 +20,7 @@ function showTab(tabName) {
 async function createDefaultAdmin() {
     const adminData = {
         username: 'admin',
-        email: 'admin@stelloscope.com',
+        email: 'admin@statuscope.com',
         password: 'admin123',
         role: 'admin'
     };

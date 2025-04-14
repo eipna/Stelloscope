@@ -1,39 +1,49 @@
-# Stelloscope
+# StatusCope
 
-A web application for connecting doctors and patients through a secure chat platform.
-
-## Overview
-
-Stelloscope is a healthcare communication platform that facilitates secure interactions between doctors and patients. The application features a modern interface with a yellow and blue color scheme, providing an intuitive experience for all users.
+A web application for managing patient-doctor communication and health monitoring.
 
 ## Features
 
-- **User Authentication**: Secure login and registration for doctors and patients
-- **Role-Based Access**: Different interfaces for doctors, patients, and administrators
-- **Real-Time Chat**: Secure messaging system between doctors and patients
-- **Admin Dashboard**: User management and monitoring capabilities
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- User Authentication (Admin, Doctor, Patient)
+- Real-time Chat between Doctors and Patients
+- Blood Pressure Monitoring for Patients
+- Admin Dashboard for User Management
 
-## Technology Stack
+## Setup
 
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Backend**: Firebase (Authentication, Firestore Database)
-- **Hosting**: GitHub Pages
+1. Clone the repository
+2. Create a Firebase project
+3. Copy `firebase-config.example.js` to `firebase-config.js` and update with your Firebase configuration
+4. Deploy to your preferred hosting service
 
-## Getting Started
+## Default Admin Account
 
-1. Clone this repository
-2. Set up a Firebase project and configure it according to the documentation
-3. Update the Firebase configuration in the project
-4. Deploy to GitHub Pages or your preferred hosting service
+- Email: admin@statuscope.com
+- Password: admin123
 
-## Security
+## Technologies Used
 
-This application implements proper security measures including:
-- Secure authentication
-- Role-based access control
-- Data encryption
-- Protected API endpoints
+- HTML5
+- CSS3
+- JavaScript
+- Firebase (Authentication, Firestore)
+- Font Awesome Icons
+
+## Project Structure
+
+```
+StatusCope/
+├── assets/
+│   ├── css/
+│   ├── js/
+│   └── img/
+├── pages/
+│   ├── chat.html
+│   └── blood-pressure.html
+├── index.html
+├── admin-dashboard.html
+└── README.md
+```
 
 ## License
 
