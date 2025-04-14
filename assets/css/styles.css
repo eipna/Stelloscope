@@ -1,10 +1,13 @@
 :root {
-    --primary-color: #FFD700;
-    --secondary-color: #1E90FF;
+    --primary-color: #FFD700; /* Yellow */
+    --secondary-color: #1E90FF; /* Blue */
+    --accent-color: #FFD700; /* Yellow */
     --text-color: #333;
     --background-color: #f5f5f5;
     --error-color: #ff4444;
     --success-color: #00C851;
+    --light-blue: #e7f3ff;
+    --light-yellow: #fff9e6;
 }
 
 * {

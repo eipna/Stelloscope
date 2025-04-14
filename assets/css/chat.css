@@ -83,11 +83,11 @@
 
 .nav-item.active {
     background-color: #e7f3ff;
-    color: #1877f2;
+    color: #1E90FF;
 }
 
 .nav-item.active i {
-    color: #1877f2;
+    color: #1E90FF;
 }
 
 /* Contacts panel */
@@ -294,6 +294,7 @@
 .no-conversation i {
     font-size: 48px;
     margin-bottom: 16px;
+    color: #1E90FF;
 }
 
 .no-conversation p {
@@ -312,7 +313,7 @@
 
 .message.sent {
     align-self: flex-end;
-    background-color: #0084ff;
+    background-color: #1E90FF;
     color: white;
     border-bottom-right-radius: 4px;
 }
@@ -365,22 +366,23 @@
 }
 
 .send-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+    background: none;
     border: none;
-    background-color: #0084ff;
-    color: white;
-    font-size: 14px;
+    color: #1E90FF;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 0 0 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     transition: background-color 0.2s;
 }
 
 .send-btn:hover {
-    background-color: #0073e6;
+    background-color: rgba(30, 144, 255, 0.1);
 }
 
 /* Responsive design */
@@ -465,4 +467,9 @@
     .chat-panel {
         height: calc(100vh - 120px);
     }
+}
+
+.main-content h1 {
+    color: #1E90FF;
+    margin-bottom: 20px;
 } 
