@@ -52,11 +52,10 @@ async function loadRecentActivity() {
         const currentUser = firebase.auth().currentUser;
         const recentActivityElement = document.getElementById('recentActivity');
         
-        // Get recent conversations
+        // Get recent conversations - modified to avoid index error
+        // First get all conversations for this doctor
         const conversationsSnapshot = await firebase.firestore().collection('conversations')
             .where('doctorId', '==', currentUser.uid)
-            .orderBy('timestamp', 'desc')
-            .limit(5)
             .get();
         
         if (conversationsSnapshot.empty) {
@@ -64,11 +63,24 @@ async function loadRecentActivity() {
             return;
         }
         
+        // Sort conversations by timestamp in memory
+        const conversations = [];
+        conversationsSnapshot.forEach(doc => {
+            const conversation = doc.data();
+            conversations.push({
+                id: doc.id,
+                ...conversation,
+                timestamp: conversation.timestamp ? conversation.timestamp.toDate() : new Date(0)
+            });
+        });
+        
+        // Sort by timestamp descending and take the first 5
+        conversations.sort((a, b) => b.timestamp - a.timestamp);
+        const recentConversations = conversations.slice(0, 5);
+        
         let activityHTML = '';
         
-        for (const doc of conversationsSnapshot.docs) {
-            const conversation = doc.data();
-            
+        for (const conversation of recentConversations) {
             // Get patient name
             const patientDoc = await firebase.firestore().collection('users').doc(conversation.patientId).get();
             const patientData = patientDoc.data();
@@ -76,7 +88,7 @@ async function loadRecentActivity() {
             
             // Get last message
             const messagesSnapshot = await firebase.firestore().collection('conversations')
-                .doc(doc.id)
+                .doc(conversation.id)
                 .collection('messages')
                 .orderBy('timestamp', 'desc')
                 .limit(1)
@@ -88,7 +100,7 @@ async function loadRecentActivity() {
             }
             
             // Format timestamp
-            const timestamp = conversation.timestamp ? new Date(conversation.timestamp.toDate()).toLocaleString() : 'Unknown time';
+            const timestamp = conversation.timestamp ? conversation.timestamp.toLocaleString() : 'Unknown time';
             
             activityHTML += `
                 <div class="activity-item">

@@ -14,6 +14,7 @@ const partnerStatusElement = document.getElementById('partnerStatus');
 const chatMessagesElement = document.getElementById('chatMessages');
 const messageInputElement = document.getElementById('messageInput');
 const searchContactsElement = document.getElementById('searchContacts');
+const sendMessageButton = document.getElementById('sendMessage');
 
 // Navigation elements
 const messagesLink = document.getElementById('messagesLink');
@@ -45,6 +46,7 @@ function checkDOMElements() {
         chatMessagesElement,
         messageInputElement,
         searchContactsElement,
+        sendMessageButton,
         messagesLink,
         bpLink,
         logoutLink
@@ -86,6 +88,10 @@ firebase.auth().onAuthStateChanged(async (user) => {
                 mobileBackBtn.style.display = 'block';
                 mobileChatBackBtn.style.display = 'block';
             }
+            
+            // Add event listener for send message button
+            sendMessageButton.addEventListener('click', sendMessage);
+            
         } catch (error) {
             console.error('Error initializing chat:', error);
             debug(`Error initializing chat: ${error.message}`);
