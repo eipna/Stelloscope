@@ -3,53 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blood Pressure Reading - StatusCope</title>
-    <link rel="stylesheet" href="../assets/css/chat.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Blood Pressure - Stelloscope</title>
+    <link rel="stylesheet" href="../assets/css/blood-pressure.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <div class="messenger-container">
-        <!-- Left sidebar with navigation -->
-        <div class="messenger-sidebar">
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
             <div class="user-profile">
-                <div class="profile-image">
-                    <i class="fas fa-user-circle"></i>
-                </div>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="profile-info">
-                    <h3 id="currentUser">Loading...</h3>
-                    <p id="userStatus">Offline</p>
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="profile-details">
+                        <h3 id="currentUser">Loading...</h3>
+                        <p id="userStatus">Offline</p>
+                    </div>
                 </div>
             </div>
-            <div class="navigation">
-                <a href="chat.html" class="nav-item" id="messagesLink">
+            <div class="navigation" id="sidebarMenu">
+                <a href="#" id="dashboardLink">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" id="messagesLink">
                     <i class="fas fa-comments"></i>
                     <span>Messages</span>
                 </a>
-                <a href="blood-pressure.html" class="nav-item active" id="bpLink">
+                <a href="#" class="active" id="bpLink">
                     <i class="fas fa-heartbeat"></i>
                     <span>Blood Pressure</span>
                 </a>
-                <a href="#" class="nav-item" id="logoutLink">
+                <a href="#" id="logoutLink">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </a>
             </div>
         </div>
 
-        <!-- Main content area -->
+        <!-- Main Content -->
         <div class="main-content">
-            <h1>Blood Pressure Reading</h1>
+            <div class="header">
+                <button class="mobile-back-btn" id="mobileBackBtn" style="display: none;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1>Blood Pressure Readings</h1>
+            </div>
             <!-- Content will be added later -->
         </div>
     </div>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <!-- Initialize Firebase -->
+    <!-- App Scripts -->
     <script src="../assets/js/firebase-config.js"></script>
     <script src="../assets/js/blood-pressure.js"></script>
+    
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+            const sidebarMenu = document.getElementById('sidebarMenu');
+            sidebarMenu.classList.toggle('show');
+        });
+        
+        // Mobile back button
+        document.getElementById('mobileBackBtn').addEventListener('click', function() {
+            window.location.href = '../patient-dashboard.html';
+        });
+        
+        // Setup navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication state
+            firebase.auth().onAuthStateChanged(async (user) => {
+                if (user) {
+                    try {
+                        // Get user data
+                        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                        if (userDoc.exists) {
+                            const userData = userDoc.data();
+                            const userRole = userData.role;
+                            
+                            // Update user profile
+                            document.getElementById('currentUser').textContent = userData.username || userData.email || 'Unknown User';
+                            document.getElementById('userStatus').textContent = userData.status || 'Offline';
+                            
+                            // Set up navigation links
+                            const dashboardLink = document.getElementById('dashboardLink');
+                            const messagesLink = document.getElementById('messagesLink');
+                            const bpLink = document.getElementById('bpLink');
+                            const logoutLink = document.getElementById('logoutLink');
+                            
+                            // Set up dashboard link based on user role
+                            dashboardLink.href = userRole === 'doctor' ? '../doctor-dashboard.html' : '../patient-dashboard.html';
+                            
+                            // Set up messages link
+                            messagesLink.href = 'chat.html';
+                            
+                            // Set up blood pressure link (only for patients)
+                            if (userRole === 'patient') {
+                                bpLink.style.display = 'flex';
+                                bpLink.href = 'blood-pressure.html';
+                            } else {
+                                bpLink.style.display = 'none';
+                            }
+                            
+                            // Set up logout
+                            logoutLink.addEventListener('click', async (e) => {
+                                e.preventDefault();
+                                try {
+                                    // Update user status to offline
+                                    await firebase.firestore().collection('users').doc(user.uid).update({
+                                        status: 'offline',
+                                        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                                    });
+                                    
+                                    // Sign out
+                                    await firebase.auth().signOut();
+                                    
+                                    // Redirect to login page
+                                    window.location.href = '../index.html';
+                                } catch (error) {
+                                    console.error('Error during logout:', error);
+                                    alert('Error during logout. Please try again.');
+                                }
+                            });
+                            
+                            // Show mobile back button if on mobile
+                            if (window.innerWidth <= 768) {
+                                document.getElementById('mobileBackBtn').style.display = 'block';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error loading user profile:', error);
+                    }
+                } else {
+                    // Redirect to login page if not authenticated
+                    window.location.href = '../index.html';
+                }
+            });
+        });
+    </script>
 </body>
 </html> 

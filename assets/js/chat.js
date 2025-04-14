@@ -19,6 +19,8 @@ const searchContactsElement = document.getElementById('searchContacts');
 const messagesLink = document.getElementById('messagesLink');
 const bpLink = document.getElementById('bpLink');
 const logoutLink = document.getElementById('logoutLink');
+const mobileBackBtn = document.getElementById('mobileBackBtn');
+const mobileChatBackBtn = document.getElementById('mobileChatBackBtn');
 
 // Debug function
 function debug(message, data = null) {
@@ -78,6 +80,12 @@ firebase.auth().onAuthStateChanged(async (user) => {
             await loadUserProfile();
             setupNavigation();
             await loadContacts();
+            
+            // Show mobile back buttons if on mobile
+            if (window.innerWidth <= 768) {
+                mobileBackBtn.style.display = 'block';
+                mobileChatBackBtn.style.display = 'block';
+            }
         } catch (error) {
             console.error('Error initializing chat:', error);
             debug(`Error initializing chat: ${error.message}`);
@@ -132,9 +140,19 @@ async function loadUserProfile() {
 function setupNavigation() {
     debug('Setting up navigation');
     
+    // Set up dashboard link based on user role
+    const dashboardLink = document.createElement('a');
+    dashboardLink.href = currentUserRole === 'doctor' ? '../doctor-dashboard.html' : '../patient-dashboard.html';
+    dashboardLink.innerHTML = '<i class="fas fa-tachometer-alt"></i><span>Dashboard</span>';
+    
+    // Insert dashboard link before logout link
+    const logoutLink = document.getElementById('logoutLink');
+    logoutLink.parentNode.insertBefore(dashboardLink, logoutLink);
+    
     // Show blood pressure link only for patients
     if (currentUserRole === 'patient') {
         bpLink.style.display = 'flex';
+        bpLink.href = 'blood-pressure.html';
     }
     
     // Setup logout
@@ -276,6 +294,12 @@ async function selectChatPartner(userId, userData) {
     
     // Load chat messages
     loadChatMessages(userId);
+    
+    // On mobile, show chat panel and hide contacts panel
+    if (window.innerWidth <= 768) {
+        document.querySelector('.contacts-panel').classList.remove('active');
+        document.querySelector('.chat-panel').classList.add('active');
+    }
 }
 
 // Load chat messages

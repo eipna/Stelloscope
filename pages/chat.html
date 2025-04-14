@@ -3,48 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat - StatusCope</title>
-    <link rel="stylesheet" href="../assets/css/styles.css?v=1.1">
-    <link rel="stylesheet" href="../assets/css/chat.css?v=1.1">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Chat - Stelloscope</title>
+    <link rel="stylesheet" href="../assets/css/chat.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div class="messenger-container">
-        <!-- Left sidebar with navigation -->
+        <!-- Sidebar -->
         <div class="messenger-sidebar">
             <div class="user-profile">
-                <div class="profile-image">
-                    <i class="fas fa-user-circle"></i>
-                </div>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="profile-info">
-                    <h3 id="currentUser">Loading...</h3>
-                    <p id="userStatus">Offline</p>
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="profile-details">
+                        <h3 id="currentUser">Loading...</h3>
+                        <p id="userStatus">Offline</p>
+                    </div>
                 </div>
             </div>
-            <div class="navigation">
-                <a href="#" class="nav-item active" id="messagesLink">
+            <div class="navigation" id="sidebarMenu">
+                <a href="#" class="active" id="messagesLink">
                     <i class="fas fa-comments"></i>
                     <span>Messages</span>
                 </a>
-                <a href="blood-pressure.html" class="nav-item" id="bpLink" style="display: none;">
+                <a href="#" id="bpLink" style="display: none;">
                     <i class="fas fa-heartbeat"></i>
                     <span>Blood Pressure</span>
                 </a>
-                <a href="#" class="nav-item" id="logoutLink">
+                <a href="#" id="logoutLink">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </a>
             </div>
         </div>
 
-        <!-- Contacts panel -->
-        <div class="contacts-panel">
+        <!-- Contacts Panel -->
+        <div class="contacts-panel active">
             <div class="contacts-header">
                 <h2 id="contactsTitle">Loading...</h2>
-                <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchContacts" placeholder="Search contacts...">
-                </div>
+                <button class="mobile-back-btn" id="mobileBackBtn" style="display: none;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+            </div>
+            <div class="search-contacts">
+                <input type="text" id="searchContacts" placeholder="Search contacts...">
+                <i class="fas fa-search"></i>
             </div>
             <div class="contacts-list" id="contactsList">
                 <div class="loading-contacts">
@@ -53,43 +60,60 @@
             </div>
         </div>
 
-        <!-- Chat panel -->
+        <!-- Chat Panel -->
         <div class="chat-panel">
             <div class="chat-header">
-                <div class="chat-partner-info">
-                    <div class="partner-avatar">
-                        <i class="fas fa-user-circle"></i>
-                    </div>
-                    <div class="partner-details">
-                        <h3 id="chatPartner">Select a contact</h3>
-                        <p id="partnerStatus">Offline</p>
-                    </div>
+                <button class="mobile-back-btn" id="mobileChatBackBtn" style="display: none;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="chat-partner">
+                    <h3 id="chatPartner">Select a contact</h3>
+                    <p id="partnerStatus"></p>
                 </div>
             </div>
-            <div class="chat-messages" id="chatMessages">
-                <div class="no-conversation">
-                    <i class="fas fa-comments"></i>
-                    <p>Select a contact to start chatting</p>
-                </div>
-            </div>
-            <div class="chat-input-container">
-                <div class="message-input-wrapper">
-                    <textarea id="messageInput" placeholder="Type a message..." rows="1"></textarea>
-                    <button class="send-btn" onclick="sendMessage()">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input">
+                <textarea id="messageInput" placeholder="Type a message..."></textarea>
+                <button id="sendMessage">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <!-- Initialize Firebase -->
+    <!-- App Scripts -->
     <script src="../assets/js/firebase-config.js"></script>
     <script src="../assets/js/chat.js"></script>
+    
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+            const sidebarMenu = document.getElementById('sidebarMenu');
+            sidebarMenu.classList.toggle('show');
+        });
+        
+        // Mobile back buttons
+        document.getElementById('mobileBackBtn').addEventListener('click', function() {
+            // Navigate back to the dashboard based on user role
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'doctor') {
+                window.location.href = '../doctor-dashboard.html';
+            } else if (userRole === 'patient') {
+                window.location.href = '../patient-dashboard.html';
+            } else {
+                window.location.href = '../index.html';
+            }
+        });
+        
+        document.getElementById('mobileChatBackBtn').addEventListener('click', function() {
+            document.querySelector('.contacts-panel').classList.add('active');
+            document.querySelector('.chat-panel').classList.remove('active');
+        });
+    </script>
 </body>
 </html> 

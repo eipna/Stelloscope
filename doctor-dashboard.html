@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Stelloscope</title>
+    <title>Doctor Dashboard - Stelloscope</title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="stylesheet" href="assets/css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -23,37 +23,54 @@
             </div>
             <ul id="sidebarMenu">
                 <li class="active"><a href="#dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="pages/chat.html"><i class="fas fa-comments"></i> Messages</a></li>
                 <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </nav>
         
         <main class="main-content">
-            <h1>Admin Dashboard</h1>
+            <h1>Doctor Dashboard</h1>
             
-            <div class="tabs">
-                <button class="tab-btn active" onclick="showUserTab('doctors')">Doctors</button>
-                <button class="tab-btn" onclick="showUserTab('patients')">Patients</button>
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3>Patients</h3>
+                    <p id="patientCount">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Messages</h3>
+                    <p id="messageCount">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Appointments</h3>
+                    <p id="appointmentCount">0</p>
+                </div>
             </div>
             
-            <div id="doctorsList" class="user-list active">
-                <h2>Doctors</h2>
-                <div class="users-container"></div>
-            </div>
-            
-            <div id="patientsList" class="user-list">
-                <h2>Patients</h2>
-                <div class="users-container"></div>
+            <div class="recent-activity">
+                <h2>Recent Activity</h2>
+                <div class="activity-list" id="recentActivity">
+                    <div class="loading">Loading recent activity...</div>
+                </div>
             </div>
         </main>
     </div>
     <script src="assets/js/firebase-config.js"></script>
-    <script src="assets/js/admin-dashboard.js"></script>
+    <script src="assets/js/doctor-dashboard.js"></script>
     <script>
         // Mobile menu toggle
         document.getElementById('mobileMenuToggle').addEventListener('click', function() {
             const sidebarMenu = document.getElementById('sidebarMenu');
             sidebarMenu.classList.toggle('show');
         });
+        
+        // Logout function
+        function logout() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'index.html';
+            }).catch((error) => {
+                console.error('Error signing out:', error);
+            });
+        }
     </script>
 </body>
 </html> 

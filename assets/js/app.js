@@ -97,8 +97,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         // Redirect based on user role
         if (userData.role === 'admin') {
             window.location.href = 'admin-dashboard.html';
+        } else if (userData.role === 'doctor') {
+            window.location.href = 'doctor-dashboard.html';
+        } else if (userData.role === 'patient') {
+            window.location.href = 'patient-dashboard.html';
         } else {
-            window.location.href = 'pages/chat.html';
+            window.location.href = 'index.html';
         }
     } catch (error) {
         showMessage(error.message, 'error');
