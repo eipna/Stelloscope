@@ -87,17 +87,18 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         const userDoc = await db.collection('users').doc(userCredential.user.uid).get();
         const userData = userDoc.data();
 
+        // Store user info in localStorage
+        localStorage.setItem('currentUser', JSON.stringify({
+            uid: userCredential.user.uid,
+            email: userCredential.user.email,
+            role: userData.role
+        }));
+
         // Redirect based on user role
-        switch(userData.role) {
-            case 'admin':
-                window.location.href = 'admin-dashboard.html';
-                break;
-            case 'doctor':
-                window.location.href = 'doctor-dashboard.html';
-                break;
-            case 'patient':
-                window.location.href = 'patient-dashboard.html';
-                break;
+        if (userData.role === 'admin') {
+            window.location.href = 'admin-dashboard.html';
+        } else {
+            window.location.href = 'pages/chat.html';
         }
     } catch (error) {
         showMessage(error.message, 'error');
